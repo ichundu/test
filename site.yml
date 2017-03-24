@@ -4,8 +4,46 @@
   remote_user: vagrant
   become: true
 
+    vars:
+    rebootrequired: false
+    selinux_state: disabled
+
   tasks:
-    - name: Test
+    - name: Enable EPEL repository
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - libselinux-python
+        - libsemanage-python
+        - vim-enhanced
+        - bash-completion
+        - nmap
+        - telnet
+        - htop
+
+    - name: Deploy public key
+      authorized_key:
+        user: vagrant
+        key: "https://github.com/ichundu.keys"
+        state: present
+
+    - name: Configure SELinux
+      selinux:
+        policy: targeted
+        state: "{{ selinux_state }}"
+
+    - name: Update box after first boot
       yum:
         name: "*"
         state: latest
+      when: rebootrequired
+
+    - include: reboot.yml
+      when: rebootrequired
+
