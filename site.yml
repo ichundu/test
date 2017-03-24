@@ -6,9 +6,17 @@
 
   vars:
     rebootrequired: false
-    selinux_state: disabled
+    selinux_state: "disabled"
+    timezone: "Europe/Berlin"
 
   tasks:
+    - name: Set timezone
+      file:
+        src: "/usr/share/zoneinfo/{{ timezone }}"
+        dest: /etc/localtime
+        force: true
+        state: link
+
     - name: Enable EPEL repository
       yum:
         name: epel-release
